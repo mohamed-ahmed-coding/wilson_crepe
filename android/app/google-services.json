@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1020400339427",
+    "project_id": "wilson-app-708fe",
+    "storage_bucket": "wilson-app-708fe.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1020400339427:android:30772c176893a685dbf8d6",
+        "android_client_info": {
+          "package_name": "com.example.wilson_crepe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAuu6EFEAYGOL5hz9SBGzxI-8iXolehHNI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
