@@ -55,30 +55,41 @@ jobs:
       - name: Build for iOS Simulator
         run: flutter build ios --simulator --debug --no-codesign
 
-      - name: Install app on Simulator
-        run: |
-          xcrun simctl install "$SIMULATOR_UDID" \
-            build/ios/iphonesimulator/Runner.app
-
-      - name: Launch Wilson Crepe
-        run: |
-          xcrun simctl launch "$SIMULATOR_UDID" com.example.wilsonCrepe
-          sleep 20
-
-      - name: Capture Simulator Screenshot
+      - name: Capture initial Simulator Screenshot
         if: always()
         run: |
           mkdir -p screenshots
           if [ -n "${SIMULATOR_UDID:-}" ]; then
+            xcrun simctl launch "$SIMULATOR_UDID" com.example.wilsonCrepe || true
+            sleep 20
             xcrun simctl io "$SIMULATOR_UDID" screenshot \
-              screenshots/wilson-crepe-iphone.png || true
+              screenshots/wilson-crepe-initial.png || true
           fi
 
-      - name: Upload Simulator Screenshot
+      - name: Run Flutter integration test
+        run: |
+          flutter drive \
+            --driver=test_driver/integration_test.dart \
+            --target=integration_test/app_screens_test.dart \
+            -d "$SIMULATOR_UDID" \
+            --no-pub
+
+      - name: Collect test outputs
+        if: always()
+        run: |
+          mkdir -p screenshots
+          if [ -d build ]; then
+            find build -type f \( -iname '*.png' -o -iname '*.jpg' \) \
+              -exec cp -n {} screenshots/ \; || true
+          fi
+
+      - name: Upload screenshots and test outputs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: wilson-crepe-ios-screenshot
-          path: screenshots/
+          name: wilson-crepe-ios-test-results
+          path: |
+            screenshots/
+            build/integration_response_data.json
           if-no-files-found: warn
           retention-days: 7
