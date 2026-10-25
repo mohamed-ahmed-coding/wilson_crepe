@@ -1,0 +1,49 @@
+
+name: Wilson Crepe iOS Simulator Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  ios-simulator:
+    runs-on: macos-15
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Check available iOS simulators
+        run: xcrun simctl list devices available
+
+      - name: Boot iPhone Simulator
+        run: |
+          DEVICE_ID=$(xcrun simctl list devices available \
+            | grep -m 1 -E 'iPhone.*Booted|iPhone' \
+            | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+
+          if [ -z "$DEVICE_ID" ]; then
+            echo "No iPhone simulator found"
+            exit 1
+          fi
+
+          xcrun simctl boot "$DEVICE_ID" || true
+          xcrun simctl bootstatus "$DEVICE_ID" -b
+
+      - name: Build Flutter iOS Simulator app
+        run: flutter build ios --simulator --debug --no-codesign
